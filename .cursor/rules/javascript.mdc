@@ -1,0 +1,12 @@
+---
+description: JavaScript/TypeScript 开发与包管理规范
+globs: *.js, *.ts, *.jsx, *.tsx, package.json
+alwaysApply: false
+---
+
+# JS/TS 项目规范
+
+- **包管理工具**：强制使用 `pnpm` 进行依赖安装和脚本执行。禁止使用 `npm` 或 `yarn`。
+- **语言选择**：
+  - 项目核心代码优先使用 **TypeScript (TS)**，以保证类型安全和可维护性。
+  - 对于构建脚本、简单的自动化脚本等，可以使用 **JavaScript (JS)**。

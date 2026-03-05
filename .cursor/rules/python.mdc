@@ -1,0 +1,10 @@
+---
+description: Python 开发与包管理规范
+globs: *.py, requirements.txt, pyproject.toml
+alwaysApply: false
+---
+
+# Python 项目规范
+
+- **包管理工具**：强制使用 `uv` 进行依赖管理和虚拟环境的创建，禁止使用 `pip` 或 `poetry` 等其他工具，除非项目中有特殊历史遗留说明。
+- **虚拟环境**：使用 `uv venv` 创建虚拟环境，并使用 `uv pip install` 安装依赖。
