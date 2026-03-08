@@ -63,7 +63,6 @@ container:
 ## Workflow Baseline
 
 - Cache paths: `.corepack`, `.pnpm-store`
-- Package manager: `pnpm@10.29.2`
 - pnpm network settings:
   - `network-concurrency=4`
   - `fetch-timeout=120000`
@@ -71,11 +70,19 @@ container:
   - `fetch-retry-mintimeout=10000`
   - `fetch-retry-maxtimeout=60000`
 
+## Deploy Workflow Optimization Strategy
+
+- Prefer `runs-on: ubuntu-latest` so the runner uses the `ubuntu-latest:docker://node:24-bullseye` label mapping
+- Do not install `openssh-client` unconditionally; first check `command -v ssh`, and only run `apt-get update && apt-get install -y openssh-client` when `ssh` is missing
+- Prefer a dedicated `Ensure SSH Client` step that also runs `ssh -V` for quick runtime verification
+- Prefer a hardened SSH setup in workflow steps: `set -euo pipefail`, `install -m 700 -d ~/.ssh`, `umask 077`, then write `~/.ssh/id_rsa` and `~/.ssh/known_hosts` with `chmod 600`
+
 ## Gitea Variables
 
-- Secret: `secrets.NAS_SSH_KEY`
+- Secret: `secrets.NAS_SSH_KEY`, `secrets.NAS_KNOWN_HOSTS`
 - Vars: `vars.NAS_IP`, `vars.NAS_SSH_PORT`, `vars.NAS_SSH_USER`, `vars.NAS_BASE_DIR`
 - Keep SSH private key only in `secrets.NAS_SSH_KEY`
+- Keep trusted SSH host fingerprints only in `secrets.NAS_KNOWN_HOSTS`
 
 ## Fixed Conclusions
 
@@ -93,6 +100,7 @@ container:
 - Do not remove runner `/data` mount
 - Do not write runner tokens, SSH private keys, or Gitea tokens into repo files
 - Do not move `secrets.NAS_SSH_KEY` into `vars`
+- Do not replace `secrets.NAS_KNOWN_HOSTS` with runtime `ssh-keyscan` unless there is an explicit host key rotation task
 - Do not introduce new `NAS_*` aliases if existing names still work
 
 ## Troubleshooting Order
