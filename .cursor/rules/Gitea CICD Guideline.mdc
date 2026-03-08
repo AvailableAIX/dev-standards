@@ -78,10 +78,12 @@ container:
 
 ## Deploy Workflow Optimization Strategy
 
-- Prefer to use `runs-on: ubuntu-latest` so the runner uses the `ubuntu-latest:docker://node:24-bullseye` label mapping
+- Must use `runs-on: ubuntu-latest` so the runner uses the `ubuntu-latest:docker://node:24-bullseye` label mapping
 - Must not install `openssh-client` unconditionally; first check `command -v ssh`, and only run `apt-get update && apt-get install -y openssh-client` when `ssh` is missing
 - Must keep a dedicated `Ensure SSH Client` step that also runs `ssh -V` for quick runtime verification
 - Must use a hardened SSH setup in workflow steps: `set -euo pipefail`, `install -m 700 -d ~/.ssh`, `umask 077`, then write `~/.ssh/id_rsa` and `~/.ssh/known_hosts` with `chmod 600`
+- For file uploads to the Synology NAS, must use `scp -O` instead of default `scp` mode because this NAS environment is not reliably compatible with the default SFTP-based transfer mode
+- When uploading deployment artifacts or compose files to NAS paths such as `/volume1/docker/...`, prefer `scp -O -P "${NAS_SSH_PORT}" ...` as the baseline form and do not switch back to plain `scp` unless there is an explicit verified environment change
 
 ## Gitea Variables
 
@@ -98,6 +100,13 @@ container:
 - Cache recovery succeeded with `Linux-pnpm-10-*`
 - Main instability was high-concurrency tarball downloads through proxy
 - Lower pnpm concurrency improved stability
+- Synology DSM file uploads succeeded with `scp -O`
+- Default `scp` mode failed for this NAS even when SSH login worked
+- OpenSSH `scp` default mode behaved like SFTP in this environment
+- The NAS SFTP path namespace did not match the SSH shell filesystem namespace
+- In SFTP, session root was `/`, but shell-visible paths such as `/volume1/docker/...` were not available there
+- This mismatch caused relative uploads to fail with `Permission denied` and `/volume1/...` uploads to fail with `No such file or directory`
+- `scp -O` worked because it used legacy SCP path handling over the remote shell instead of the NAS SFTP path namespace
 
 ## Do Not Change Lightly
 
@@ -123,5 +132,7 @@ container:
 
 - Prefer runner-side diagnosis before changing workflow cache logic
 - On Windows, be careful with nested `ssh` + `bash -lc` + heredoc quoting
+- On this NAS, if `scp` upload fails but `ssh` works, first force legacy SCP protocol with `scp -O` before changing paths, permissions, or workflow structure
+- If someone questions the `scp -O` requirement, verify with `sftp` first: compare SFTP `pwd`/`ls` output against SSH shell paths and expect `/volume1/...` to be unavailable in the SFTP view on this NAS
 - If remote bind-mounted files become `root`-owned, repair ownership before cleanup
 - Deployment currently clears the old remote directory before copying the new one
