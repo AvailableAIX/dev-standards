@@ -10,7 +10,6 @@ alwaysApply: false
 
 - Local OS: Windows
 - Workflow dir: `.gitea/workflows`
-- Also read before editing deploy flow: `.gitea/workflows/deploy.yml`
 
 ## Remote Paths And Targets
 
@@ -62,20 +61,27 @@ container:
 
 ## Workflow Baseline
 
-- Cache paths: `.corepack`, `.pnpm-store`
-- pnpm network settings:
-  - `network-concurrency=4`
-  - `fetch-timeout=120000`
-  - `fetch-retries=5`
-  - `fetch-retry-mintimeout=10000`
-  - `fetch-retry-maxtimeout=60000`
+- Mandatory for all pnpm-based workflows in `.gitea/workflows`:
+  - Must cache exactly these paths: `.corepack`, `.pnpm-store`
+  - Must set `COREPACK_HOME=.corepack`
+  - Must set pnpm `store-dir` to `.pnpm-store`
+  - Must set pnpm network settings before dependency installation:
+    - `network-concurrency=4`
+    - `fetch-timeout=120000`
+    - `fetch-retries=5`
+    - `fetch-retry-mintimeout=10000`
+    - `fetch-retry-maxtimeout=60000`
+  - Must keep the reduced concurrency baseline unless there is an explicit task to re-benchmark runner/proxy stability
+  - Must not raise `network-concurrency`, remove these retry/timeout settings, or switch back to default pnpm download behavior because high-concurrency tarball downloads through the proxy have already caused install timeouts on this runner
+- Recommended implementation details:
+  - Prefer `pnpm install --prefer-offline` after cache restore
 
 ## Deploy Workflow Optimization Strategy
 
-- Prefer `runs-on: ubuntu-latest` so the runner uses the `ubuntu-latest:docker://node:24-bullseye` label mapping
-- Do not install `openssh-client` unconditionally; first check `command -v ssh`, and only run `apt-get update && apt-get install -y openssh-client` when `ssh` is missing
-- Prefer a dedicated `Ensure SSH Client` step that also runs `ssh -V` for quick runtime verification
-- Prefer a hardened SSH setup in workflow steps: `set -euo pipefail`, `install -m 700 -d ~/.ssh`, `umask 077`, then write `~/.ssh/id_rsa` and `~/.ssh/known_hosts` with `chmod 600`
+- Must use `runs-on: ubuntu-latest` so the runner uses the `ubuntu-latest:docker://node:24-bullseye` label mapping
+- Must not install `openssh-client` unconditionally; first check `command -v ssh`, and only run `apt-get update && apt-get install -y openssh-client` when `ssh` is missing
+- Must keep a dedicated `Ensure SSH Client` step that also runs `ssh -V` for quick runtime verification
+- Must use a hardened SSH setup in workflow steps: `set -euo pipefail`, `install -m 700 -d ~/.ssh`, `umask 077`, then write `~/.ssh/id_rsa` and `~/.ssh/known_hosts` with `chmod 600`
 
 ## Gitea Variables
 
