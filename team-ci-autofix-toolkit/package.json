@@ -1,0 +1,13 @@
+{
+  "name": "team-ci-autofix-toolkit",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "bin": {
+    "team-ci-autofix": "./bin/ci-autofix.mjs"
+  },
+  "scripts": {
+    "check": "node --check ./bin/ci-autofix.mjs && node --check ./src/toolkit.mjs && node --check ./templates/runner.mjs",
+    "example:render": "node ./bin/ci-autofix.mjs render-workflow ./examples/saifute-wsm-server.ci-autofix.config.json"
+  }
+}

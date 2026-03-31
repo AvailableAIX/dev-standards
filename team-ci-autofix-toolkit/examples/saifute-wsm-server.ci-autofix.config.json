@@ -1,0 +1,55 @@
+{
+  "project": {
+    "repository": "Cupcc/saifute-wsm-server",
+    "workflowName": "CI"
+  },
+  "runner": {
+    "labels": ["self-hosted", "macOS", "ARM64", "saifute-wsm-server"]
+  },
+  "runtime": {
+    "nodeVersion": "24.14.0",
+    "pnpmVersion": "10.29.2"
+  },
+  "git": {
+    "allowedBranchRegex": ".*",
+    "protectedBranchRegex": "^(main|master|release\\/.*)$",
+    "maxAttempts": 2,
+    "commitPrefix": "fix(ci): auto-repair"
+  },
+  "logging": {
+    "rootDir": "logs/ci-autofix",
+    "commentOnPr": true
+  },
+  "codex": {
+    "bin": "codex",
+    "model": "",
+    "dangerouslyBypassSandbox": true,
+    "promptAppendix": "优先使用仓库现有命令和契约，不要为了让 CI 变绿而改变业务语义。"
+  },
+  "validation": [
+    {
+      "name": "root-install",
+      "command": "HUSKY=0 pnpm install --frozen-lockfile"
+    },
+    {
+      "name": "prisma-validate",
+      "command": "DATABASE_URL='mysql://ci:ci@127.0.0.1:3306/saifute_ci' pnpm prisma:validate"
+    },
+    {
+      "name": "typecheck",
+      "command": "pnpm typecheck"
+    },
+    {
+      "name": "build",
+      "command": "pnpm build"
+    },
+    {
+      "name": "web-install",
+      "command": "HUSKY=0 pnpm --dir web install --frozen-lockfile"
+    },
+    {
+      "name": "web-build",
+      "command": "pnpm --dir web build:prod"
+    }
+  ]
+}

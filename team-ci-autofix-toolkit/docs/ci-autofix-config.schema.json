@@ -1,0 +1,108 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Team CI Autofix Config",
+  "type": "object",
+  "required": ["project", "runner", "validation"],
+  "properties": {
+    "project": {
+      "type": "object",
+      "required": ["repository", "workflowName"],
+      "properties": {
+        "repository": {
+          "type": "string",
+          "description": "GitHub repository slug, e.g. owner/repo"
+        },
+        "workflowName": {
+          "type": "string",
+          "description": "Name of the primary CI workflow to watch"
+        }
+      }
+    },
+    "runner": {
+      "type": "object",
+      "required": ["labels"],
+      "properties": {
+        "labels": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
+        }
+      }
+    },
+    "runtime": {
+      "type": "object",
+      "properties": {
+        "nodeVersion": {
+          "type": "string"
+        },
+        "pnpmVersion": {
+          "type": "string"
+        }
+      }
+    },
+    "git": {
+      "type": "object",
+      "properties": {
+        "allowedBranchRegex": {
+          "type": "string"
+        },
+        "protectedBranchRegex": {
+          "type": "string"
+        },
+        "maxAttempts": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "commitPrefix": {
+          "type": "string"
+        }
+      }
+    },
+    "logging": {
+      "type": "object",
+      "properties": {
+        "rootDir": {
+          "type": "string"
+        },
+        "commentOnPr": {
+          "type": "boolean"
+        }
+      }
+    },
+    "codex": {
+      "type": "object",
+      "properties": {
+        "bin": {
+          "type": "string"
+        },
+        "model": {
+          "type": "string"
+        },
+        "dangerouslyBypassSandbox": {
+          "type": "boolean"
+        },
+        "promptAppendix": {
+          "type": "string"
+        }
+      }
+    },
+    "validation": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["name", "command"],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "command": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}
