@@ -7,7 +7,7 @@ alwaysApply: false
 # Gitea CICD guideline
 
 > 这是推送到群晖 NAS 使用 container manager 部署的内网 gitea 服务的 cicd 操作指南
->
+
 ## Direct Baseline
 
 - Workflow dir: `.gitea/workflows`
